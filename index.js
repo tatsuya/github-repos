@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var https = require('https');
 var qs = require('querystring'); 
 
