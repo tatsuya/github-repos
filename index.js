@@ -1,13 +1,43 @@
 #!/usr/bin/env node
+'use strict';
 
+var parseArgs = require('minimist');
 var https = require('https');
-var qs = require('querystring'); 
+var qs = require('querystring');
 
+/**
+ * Print usage.
+ */
 function usage() {
-  console.log('Usage: node ./index.js octocat');
+  [
+    '',
+    '  Usage: node index.js [options]',
+    '',
+    '  Options:',
+    '',
+    '    -u, --user   List repos for specified user',
+    '    -o, --org    List repos for specified organization',
+    '',
+    '  Examples:',
+    '',
+    '    $ node index.js --user octocat',
+    '    $ node index.js -o github',
+    ''
+  ].forEach(function(line) {
+    console.log(line);
+  });
 }
 
-function request(repos, username, page, callback) {
+/**
+ * Print fetching message.
+ *
+ * @param {String} target
+ */
+function fetching(target) {
+  console.log('Fetching public repositories for "' + target + '"...');
+}
+
+function request(repos, path, page, callback) {
   repos = repos || [];
   page = page || 1;
 
@@ -18,7 +48,7 @@ function request(repos, username, page, callback) {
 
   var options = {
     hostname: 'api.github.com',
-    path: '/users/' + username + '/repos?' + qs.stringify(params),
+    path: path + '?' + qs.stringify(params),
     headers: {
       'User-Agent': 'Github-Repos-App'
     }
@@ -44,7 +74,7 @@ function request(repos, username, page, callback) {
       if (obj.length < params['per_page']) {
         callback(null, repos);
       } else {
-        request(repos, username, page + 1, callback);
+        request(repos, path, page + 1, callback);
       }
     });
   });
@@ -54,16 +84,25 @@ function request(repos, username, page, callback) {
   req.end();
 }
 
-if (process.argv.length < 3) {
+var argv = parseArgs(process.argv.slice(2));
+
+var user, org, path;
+
+user = argv.user || argv.u;
+org = argv.org || argv.o;
+
+if (typeof user === 'string') {
+  path = '/users/' + user + '/repos';
+  fetching(user);
+} else if (typeof org === 'string') {
+  path = '/orgs/' + org + '/repos';
+  fetching(org);
+} else {
   usage();
   process.exit(1);
 }
 
-var username = process.argv[2];
-
-console.log('Fetching public repositories for "' + username + '"...');
-
-request(null, username, null, function(err, repos) {
+request(null, path, null, function(err, repos) {
   if (err) {
     console.log('Got error: ' + err.message);
   } else {
