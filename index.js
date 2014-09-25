@@ -15,13 +15,15 @@ function usage() {
     '',
     '  Options:',
     '',
-    '    -u, --user   List repos for specified user',
-    '    -o, --org    List repos for specified organization',
+    '    -u, --user       List repos for specified user',
+    '    -o, --org        List repos for specified organization',
+    '    -l, --language   List repos for specified language written in',
     '',
     '  Examples:',
     '',
     '    $ node index.js --user octocat',
-    '    $ node index.js -o github',
+    '    $ node index.js --org github',
+    '    $ node index.js -o npm -l JavaScript',
     ''
   ].forEach(function(line) {
     console.log(line);
@@ -93,24 +95,51 @@ function request(repos, path, page, callback) {
 }
 
 /**
- * Parse response.
+ * Create a response parser with given filters
  *
- * @param  {Object} err
- * @param  {Array} repos
+ * @param  {Array} filters - filters to apply
+ * @return {Function} response parser
  */
-function response(err, repos) {
-  if (err) {
-    console.log('Got error: ' + err.message);
-    return;
-  }
+function response(filters) {
+  return function parse(err, repos) {
+    if (err) {
+      console.log('Got error: ' + err.message);
+      return;
+    }
 
-  repos.forEach(function(repo) {
-    console.log();
-    console.log(repo['html_url']);
-    console.log(repo['description']);
-  });
+    // Apply filters to repos.
+    filters.forEach(function(filter) {
+      repos = repos.filter(filter);
+    });
+
+    repos.forEach(function(repo) {
+      console.log();
+      console.log(repo['html_url']);
+      console.log(repo['description']);
+    });
+  }
 }
 
+/**
+ * Available filters.
+ */
+var filters = {};
+
+/**
+ * Filter by programming language written in.
+ *
+ * @param  {String}   language
+ * @return {Function} filter
+ */
+filters.language = function(language) {
+  return function(repo) {
+    return repo.language == language;
+  };
+};
+
+/**
+ * Command-line interface
+ */
 var argv = parseArgs(process.argv.slice(2));
 
 var user, org, path;
@@ -129,4 +158,12 @@ if (typeof user === 'string') {
   process.exit(1);
 }
 
-request(null, path, null, response);
+// Filter options
+var language = argv.language || argv.l;
+
+var filtersToUse = [];
+if (language) {
+  filtersToUse.push(filters.language(language));
+}
+
+request(null, path, null, response(filtersToUse));
