@@ -2,6 +2,7 @@
 'use strict';
 
 var parseArgs = require('minimist');
+var chalk = require('chalk');
 var https = require('https');
 var qs = require('querystring');
 
@@ -113,9 +114,9 @@ function response(filters) {
     });
 
     repos.forEach(function(repo) {
-      console.log();
-      console.log(repo['html_url']);
+      console.log(chalk.yellow(repo['html_url']));
       console.log(repo['description']);
+      console.log();
     });
   }
 }
