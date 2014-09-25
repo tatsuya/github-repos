@@ -37,6 +37,14 @@ function fetching(target) {
   console.log('Fetching public repositories for "' + target + '"...');
 }
 
+/**
+ * Send an request.
+ *
+ * @param  {Array}    repos
+ * @param  {String}   path
+ * @param  {Number}   page
+ * @param  {Function} callback
+ */
 function request(repos, path, page, callback) {
   repos = repos || [];
   page = page || 1;
@@ -84,6 +92,25 @@ function request(repos, path, page, callback) {
   req.end();
 }
 
+/**
+ * Parse response.
+ *
+ * @param  {Object} err
+ * @param  {Array} repos
+ */
+function response(err, repos) {
+  if (err) {
+    console.log('Got error: ' + err.message);
+    return;
+  }
+
+  repos.forEach(function(repo) {
+    console.log();
+    console.log(repo['html_url']);
+    console.log(repo['description']);
+  });
+}
+
 var argv = parseArgs(process.argv.slice(2));
 
 var user, org, path;
@@ -102,10 +129,4 @@ if (typeof user === 'string') {
   process.exit(1);
 }
 
-request(null, path, null, function(err, repos) {
-  if (err) {
-    console.log('Got error: ' + err.message);
-  } else {
-    console.log(repos.length + ' repo(s) are found!');
-  }
-});
+request(null, path, null, response);
