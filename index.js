@@ -114,9 +114,9 @@ function response(filters) {
     });
 
     repos.forEach(function(repo) {
-      console.log(chalk.yellow(repo['html_url']));
-      console.log(repo['description']);
       console.log();
+      console.log('  ' + chalk.yellow(repo['html_url']));
+      console.log('  ' + repo['description']);
     });
   }
 }
