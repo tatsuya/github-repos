@@ -113,6 +113,16 @@ function response(filters) {
       repos = repos.filter(filter);
     });
 
+    repos.sort(function(a, b) {
+      if (a['stargazers_count'] > b['stargazers_count']) {
+        return 1;
+      }
+      if (a['stargazers_count'] < b['stargazers_count']) {
+        return -1;
+      }
+      return 0;
+    });
+
     repos.forEach(function(repo) {
       console.log();
       console.log('  ' + chalk.cyan(repo['html_url']) + ' ' + chalk.yellow('(' + repo['stargazers_count'] + ' stars)'));
