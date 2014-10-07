@@ -115,10 +115,10 @@ function response(filters) {
 
     repos.forEach(function(repo) {
       console.log();
-      console.log('  ' + chalk.yellow(repo['html_url']));
+      console.log('  ' + chalk.cyan(repo['html_url']) + ' ' + chalk.yellow('(' + repo['stargazers_count'] + ' stars)'));
       console.log('  ' + repo['description']);
     });
-  }
+  };
 }
 
 /**
